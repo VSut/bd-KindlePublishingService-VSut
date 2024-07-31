@@ -1,1 +1,74 @@
-PARTICIPANTS: use this file for creating the class diagram in mastery task 01
+```plantuml
+@startuml
+
+class RemoveBookFromCatalogActivity {
+    - catalogDao : CatalogDao
+    - publishingStatusDao : PublishingStatusDao
+    + execute(RemoveBookFromCatalogRequest) : RemoveBookFromCatalogResponse
+}
+
+class SubmitBookForPublishingActivity {
+    - publishingStatusDao : PublishingStatusDao
+    + execute(SubmitBookForPublishingRequest) : SubmitBookForPublishingResponse
+}
+
+class RecommendationsServiceClient {
+    + getRecommendations(String) : List<String>
+}
+
+class CatalogDao {
+    - dynamoDBMapper : DynamoDBMapper
+    + getCatalogItem(String) : CatalogItem
+    + removeCatalogItem(String) : void
+}
+
+class PublishingStatusDao {
+    - dynamoDBMapper : DynamoDBMapper
+    + getPublishingStatus(String) : PublishingStatusItem
+    + updatePublishingStatus(PublishingStatusItem) : void
+}
+
+class CatalogItemVersion {
+    @DynamoDBHashKey bookId : String
+    @DynamoDBRangeKey version : int
+    + inactive : boolean
+    + author : String
+    + text : String
+    + genre : BookGenre
+}
+
+class PublishingStatusItem {
+    @DynamoDBHashKey publishingRecordId : String
+    @DynamoDBRangeKey status : PublishingRecordStatus
+    + statusMessage : String
+    + bookId : String
+}
+
+class BookNotFoundException extends RuntimeException {
+    + BookNotFoundException(String)
+}
+
+class MetricsPublisher {
+    + publishMetric(String, double) : void
+}
+class GetBookActivity {
+    - catalogDao : CatalogDao
+    - recommendationsServiceClient : RecommendationsServiceClient
+    + execute(GetBookRequest) : GetBookResponse
+}
+
+
+CatalogItemVersion --> CatalogDao
+PublishingStatusItem --> PublishingStatusDao
+RemoveBookFromCatalogActivity --> CatalogDao
+RemoveBookFromCatalogActivity --> PublishingStatusDao
+SubmitBookForPublishingActivity --> PublishingStatusDao
+RecommendationsServiceClient --> CatalogDao
+GetBookActivity --> CatalogDao
+GetBookActivity --> RecommendationsServiceClient
+GetBookActivity --> CatalogDao
+GetBookActivity --> RecommendationsServiceClient
+CatalogDao ..> BookNotFoundException
+
+@enduml
+```

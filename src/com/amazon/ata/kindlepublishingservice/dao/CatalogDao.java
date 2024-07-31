@@ -58,4 +58,16 @@ public class CatalogDao {
         }
         return results.get(0);
     }
+
+    public boolean removeBookFromCatalog(String bookId) {
+        try {
+            CatalogItemVersion toBeDel = getBookFromCatalog(bookId);
+            toBeDel.setInactive(true);
+            dynamoDbMapper.save(toBeDel);
+            return true;
+        } catch (Exception e) {
+            throw new BookNotFoundException(String.format("No book found for id: %s", bookId));
+        }
+
+    }
 }

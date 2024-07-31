@@ -1,1 +1,24 @@
-PARTICIPANTS: use this file for creating the remove book from catalog diagram in mastery task 01
+@startuml
+actor User
+participant "RemoveBookFromCatalogActivity"
+participant "CatalogDao"
+participant "PublishingStatusDao"
+participant "CatalogItemVersion"
+participant "BookNotFoundException"
+participant "RemoveBookFromCatalogRequest"
+participant "RemoveBookFromCatalogResponse"
+
+User -> RemoveBookFromCatalogActivity: RemoveBookFromCatalogRequest
+RemoveBookFromCatalogActivity -> RemoveBookFromCatalogActivity: execute(RemoveBookFromCatalogRequest)
+RemoveBookFromCatalogActivity -> CatalogDao: removeBookFromCatalog(bookId)
+alt Book found and active
+    CatalogDao -> RemoveBookFromCatalogActivity: CatalogItemVersion
+    RemoveBookFromCatalogActivity -> CatalogItemVersion: setInactive(true)
+    CatalogItemVersion -> RemoveBookFromCatalogActivity: void
+    RemoveBookFromCatalogActivity -> User: RemoveBookFromCatalogResponse
+else Book not found or inactive
+    CatalogDao -> RemoveBookFromCatalogActivity: null
+    RemoveBookFromCatalogActivity -> User: BookNotFoundException
+end
+
+@enduml
