@@ -11,6 +11,7 @@ import dagger.Provides;
 import javax.inject.Singleton;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Module
 public class ClientsModule {
@@ -24,7 +25,7 @@ public class ClientsModule {
 
     @Singleton
     @Provides
-    public Queue<BookPublishRequest> provideBookPublishRequestQueue() {
-        return new LinkedList<BookPublishRequest>();
+    public ConcurrentLinkedQueue<BookPublishRequest> provideBookPublishRequestQueue() {
+        return new ConcurrentLinkedQueue<BookPublishRequest>();
     }
 }

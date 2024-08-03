@@ -3,6 +3,8 @@ package com.amazon.ata.kindlepublishingservice.dao;
 import com.amazon.ata.kindlepublishingservice.dynamodb.models.CatalogItemVersion;
 import com.amazon.ata.kindlepublishingservice.exceptions.BookNotFoundException;
 
+import com.amazon.ata.kindlepublishingservice.publishing.KindleFormattedBook;
+import com.amazon.ata.kindlepublishingservice.utils.KindlePublishingUtils;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 
@@ -77,6 +79,37 @@ public class CatalogDao {
         } catch (Exception e) {
             throw new BookNotFoundException("Book not found");
         }
+    }
+
+    public CatalogItemVersion createOrUpdateBook(KindleFormattedBook book) {
+        if (book.getBookId() == null) {
+            CatalogItemVersion newBook = new CatalogItemVersion();
+            newBook.setBookId(KindlePublishingUtils.generateBookId());
+            newBook.setAuthor(book.getAuthor());
+            newBook.setTitle(book.getTitle());
+            newBook.setText(book.getText());
+            newBook.setGenre(book.getGenre());
+            newBook.setInactive(false);
+            newBook.setVersion(1);
+            dynamoDbMapper.save(newBook);
+            return newBook;
+        }
+        CatalogItemVersion updatedBook = getLatestVersionOfBook(book.getBookId());
+        if (updatedBook == null) {
+            throw new BookNotFoundException("Book not found");
+        }
+        updatedBook.setAuthor(book.getAuthor());
+        updatedBook.setTitle(book.getTitle());
+        updatedBook.setText(book.getText());
+        updatedBook.setGenre(book.getGenre());
+        updatedBook.setVersion(updatedBook.getVersion() + 1);
+        dynamoDbMapper.save(updatedBook);
+        updatedBook.setVersion(updatedBook.getVersion() - 1);
+        updatedBook.setInactive(true);
+        dynamoDbMapper.save(updatedBook);
+        updatedBook.setInactive(false);
+        updatedBook.setVersion(updatedBook.getVersion() + 1);
+        return updatedBook;
     }
 
 }
